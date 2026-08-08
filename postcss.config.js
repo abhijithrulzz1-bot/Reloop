@@ -1,1 +1,6 @@
-export default { plugins: { tailwindcss: {}, autoprefixer: {}, }, }; Commit changes
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
