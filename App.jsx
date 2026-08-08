@@ -1,10 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
 import {
   Search, Heart, MapPin, Star, ArrowLeftRight, X, ChevronLeft,
   ChevronRight, Home, Compass, MessageCircle, User, Plus,
   Smartphone, Laptop, Car, Bike, Gamepad2, Camera, Sofa, Watch,
-  Shirt, Package, SlidersHorizontal, Check, BadgeCheck, TrendingUp, Sun, Moon
+  Shirt, Package, SlidersHorizontal, Check, BadgeCheck, TrendingUp, Sun, Moon, LogOut, Mail, Lock
 } from "lucide-react";
+
+const SUPABASE_URL = "https://gzprgsnfsdkhbknqcedn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_NybdH_YaN8hDsGrLAep3pA_Qp0BWl7R";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ---------- THEME ----------
 // Values point at CSS custom properties so the whole app can retheme
@@ -190,8 +195,94 @@ function StatCard({ label, value, accent }) {
   );
 }
 
+// ---------- AUTH ----------
+function AuthModal({ onClose }) {
+  const [mode, setMode] = useState("signin"); // signin | signup
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [confirmSent, setConfirmSent] = useState(false);
+
+  const submit = async () => {
+    setError("");
+    if (!email.trim() || !password) { setError("Enter an email and password."); return; }
+    setLoading(true);
+    const fn = mode === "signup" ? supabase.auth.signUp : supabase.auth.signInWithPassword;
+    const { data, error: err } = await fn({ email: email.trim(), password });
+    setLoading(false);
+    if (err) { setError(err.message); return; }
+    if (mode === "signup" && data?.user && !data?.session) {
+      setConfirmSent(true);
+      return;
+    }
+    onClose();
+  };
+
+  if (confirmSent) {
+    return (
+      <Overlay onClose={onClose}>
+        <div className="fade-in" style={{ padding: "40px 32px", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.getDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
+            <Mail size={24} color={T.get} />
+          </div>
+          <div className="f-display" style={{ fontSize: 20, color: T.ink, marginBottom: 8 }}>Check your email</div>
+          <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
+            We sent a confirmation link to {email}. Click it, then come back and sign in.
+          </p>
+          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+            Got it
+          </button>
+        </div>
+      </Overlay>
+    );
+  }
+
+  return (
+    <Overlay onClose={onClose}>
+      <div style={{ padding: "26px 26px 18px", borderBottom: `1px solid ${T.border}` }}>
+        <div className="f-display" style={{ fontSize: 20, color: T.ink }}>{mode === "signin" ? "Log in" : "Create account"}</div>
+        <div className="f-body" style={{ fontSize: 13, color: T.inkMuted, marginTop: 2 }}>Real accounts, shared across every visitor</div>
+      </div>
+      <div style={{ padding: "22px 26px" }}>
+        <div className="f-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>EMAIL</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px" }}>
+              <Mail size={14} color={T.inkMuted} />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" type="email"
+                style={{ flex: 1, background: "transparent", border: "none", color: T.ink, fontSize: 14, outline: "none" }} />
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>PASSWORD</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px" }}>
+              <Lock size={14} color={T.inkMuted} />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" type="password"
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+                style={{ flex: 1, background: "transparent", border: "none", color: T.ink, fontSize: 14, outline: "none" }} />
+            </div>
+          </div>
+          {error && <div className="f-body" style={{ color: T.give, fontSize: 12.5 }}>{error}</div>}
+        </div>
+
+        <button onClick={submit} disabled={loading} className="f-body" style={{ width: "100%", marginTop: 18, background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1 }}>
+          {loading ? "Please wait..." : mode === "signin" ? "Log in" : "Sign up"}
+        </button>
+
+        <div className="f-body" style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: T.inkMuted }}>
+          {mode === "signin" ? "New to Reloop?" : "Already have an account?"}{" "}
+          <span onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }} style={{ color: T.get, cursor: "pointer", fontWeight: 600 }}>
+            {mode === "signin" ? "Create an account" : "Log in"}
+          </span>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
+
 // ---------- LIST AN ITEM ----------
-function ListItemForm({ onClose, onCreate }) {
+function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
   const [title, setTitle] = useState("");
   const [cat, setCat] = useState(CATEGORIES[0].name);
   const [value, setValue] = useState("");
@@ -199,6 +290,8 @@ function ListItemForm({ onClose, onCreate }) {
   const [desc, setDesc] = useState("");
   const [photo, setPhoto] = useState(null);
   const [done, setDone] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const handleFile = (e) => {
     const file = e.target.files?.[0];
@@ -209,6 +302,25 @@ function ListItemForm({ onClose, onCreate }) {
   };
 
   const canSubmit = title.trim() && value;
+
+  if (!user) {
+    return (
+      <Overlay onClose={onClose}>
+        <div className="fade-in" style={{ padding: "40px 32px", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.surfaceRaised, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
+            <User size={24} color={T.inkMuted} />
+          </div>
+          <div className="f-display" style={{ fontSize: 20, color: T.ink, marginBottom: 8 }}>Log in to list an item</div>
+          <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
+            Listings are tied to your account so buyers know who they're dealing with, and so it stays visible to everyone after you close this tab.
+          </p>
+          <button onClick={() => { onClose(); onRequireAuth(); }} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+            Log in / Sign up
+          </button>
+        </div>
+      </Overlay>
+    );
+  }
 
   if (done) {
     return (
@@ -286,21 +398,33 @@ function ListItemForm({ onClose, onCreate }) {
       </div>
 
       <div style={{ padding: "18px 26px", borderTop: `1px solid ${T.border}` }}>
+        {error && <div className="f-body" style={{ color: T.give, fontSize: 12.5, marginBottom: 10 }}>{error}</div>}
         <button
-          disabled={!canSubmit}
-          onClick={() => {
+          disabled={!canSubmit || saving}
+          onClick={async () => {
+            setError("");
+            setSaving(true);
+            const { data, error: err } = await supabase
+              .from("listings")
+              .insert({
+                title, category: cat, value: Number(value) || 0, condition,
+                description: desc || "No description provided.", photo, owner_email: user.email,
+              })
+              .select()
+              .single();
+            setSaving(false);
+            if (err) { setError(err.message); return; }
             onCreate({
-              id: Date.now(),
-              title, cat, value: Number(value) || 0, condition, desc: desc || "No description provided.",
-              loc: "Thiruvananthapuram", posted: "Just now", swap: true, rating: 5.0,
-              wants: ["Any reasonable offer"], photo,
+              id: data.id, title: data.title, cat: data.category, value: data.value, condition: data.condition,
+              desc: data.description, loc: "Community listing", posted: "Just now", swap: true, rating: 5.0,
+              wants: ["Any reasonable offer"], photo: data.photo, ownerEmail: data.owner_email,
             });
             setDone(true);
           }}
           className="f-body"
-          style={{ width: "100%", background: canSubmit ? T.get : T.surfaceRaised, color: canSubmit ? "#08130E" : T.inkMuted, border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: canSubmit ? "pointer" : "not-allowed" }}
+          style={{ width: "100%", background: canSubmit ? T.get : T.surfaceRaised, color: canSubmit ? "#08130E" : T.inkMuted, border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: canSubmit && !saving ? "pointer" : "not-allowed" }}
         >
-          Publish Listing
+          {saving ? "Publishing..." : "Publish Listing"}
         </button>
       </div>
     </Overlay>
@@ -487,8 +611,8 @@ function Overlay({ children, onClose }) {
 }
 
 // ---------- ITEM DETAIL ----------
-function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
-  const matches = ITEMS.filter((i) => i.id !== item.id && i.cat === item.cat).slice(0, 3);
+function ItemDetail({ item, allItems, onBack, onOffer, saved, onToggleSave }) {
+  const matches = allItems.filter((i) => i.id !== item.id && i.cat === item.cat).slice(0, 3);
   return (
     <div className="fade-in" style={{ maxWidth: 920, margin: "0 auto", padding: "24px 20px 100px" }}>
       <button onClick={onBack} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: T.inkMuted, cursor: "pointer", marginBottom: 18, fontSize: 13.5 }}>
@@ -532,10 +656,10 @@ function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13.5, color: T.ink, fontWeight: 600 }}>
-                  Priya M. <BadgeCheck size={14} color={T.get} />
+                  {item.ownerEmail ? item.ownerEmail.split("@")[0] : "Priya M."} {!item.ownerEmail && <BadgeCheck size={14} color={T.get} />}
                 </div>
                 <div style={{ fontSize: 12, color: T.inkMuted, display: "flex", alignItems: "center", gap: 4 }}>
-                  <Star size={11} color={T.gold} fill={T.gold} /> {item.rating} · Member since 2023
+                  {item.ownerEmail ? "Community seller" : <><Star size={11} color={T.gold} fill={T.gold} /> {item.rating} · Member since 2023</>}
                 </div>
               </div>
             </div>
@@ -572,7 +696,7 @@ function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
 }
 
 // ---------- NAVBAR ----------
-function Navbar({ page, setPage, onList, theme, onToggleTheme }) {
+function Navbar({ page, setPage, onList, theme, onToggleTheme, user, onProfile }) {
   const links = ["Browse", "Categories", "Find My Match", "How It Works"];
   return (
     <div style={{ borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: "var(--navbg)", backdropFilter: "blur(8px)", zIndex: 30 }}>
@@ -595,8 +719,8 @@ function Navbar({ page, setPage, onList, theme, onToggleTheme }) {
           <button onClick={onList} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <Plus size={15} /> List an Item
           </button>
-          <button onClick={() => setPage("dashboard")} style={{ width: 34, height: 34, borderRadius: "50%", background: T.surfaceRaised, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <User size={16} color={T.inkMuted} />
+          <button onClick={onProfile} style={{ width: 34, height: 34, borderRadius: "50%", background: user ? T.getDim : T.surfaceRaised, border: `1px solid ${user ? T.get : T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <User size={16} color={user ? T.get : T.inkMuted} />
           </button>
         </div>
       </div>
@@ -621,7 +745,7 @@ function BottomNav({ page, setPage, onList }) {
 }
 
 // ---------- HOME ----------
-function HomePage({ setPage, search, setSearch, onList }) {
+function HomePage({ setPage, search, setSearch, onList, allItems }) {
   return (
     <div className="fade-in">
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "70px 20px 40px", textAlign: "center" }}>
@@ -672,7 +796,7 @@ function HomePage({ setPage, search, setSearch, onList }) {
           <span onClick={() => setPage("browse")} className="f-body" style={{ color: T.get, fontSize: 13, cursor: "pointer", fontWeight: 600 }}>View all →</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
-          {ITEMS.slice(0, 4).map((it) => (
+          {allItems.slice(0, 4).map((it) => (
             <ItemCard key={it.id} item={it} onOpen={() => setPage("browse")} saved={false} onToggleSave={() => {}} />
           ))}
         </div>
@@ -703,16 +827,16 @@ function HomePage({ setPage, search, setSearch, onList }) {
 }
 
 // ---------- BROWSE ----------
-function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave }) {
+function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave, allItems }) {
   const [cat, setCat] = useState("All");
   const [sort, setSort] = useState("Recommended");
   const filtered = useMemo(() => {
-    let list = ITEMS.filter((i) => (cat === "All" || i.cat === cat) && i.title.toLowerCase().includes(search.toLowerCase()));
+    let list = allItems.filter((i) => (cat === "All" || i.cat === cat) && i.title.toLowerCase().includes(search.toLowerCase()));
     if (sort === "Lowest value") list = [...list].sort((a, b) => a.value - b.value);
     if (sort === "Highest value") list = [...list].sort((a, b) => b.value - a.value);
     if (sort === "Newest") list = [...list].reverse();
     return list;
-  }, [cat, sort, search]);
+  }, [cat, sort, search, allItems]);
 
   return (
     <div className="fade-in" style={{ maxWidth: 1180, margin: "0 auto", padding: "26px 20px 100px" }}>
@@ -753,7 +877,7 @@ function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave }) {
 }
 
 // ---------- DASHBOARD ----------
-function DashboardPage({ savedIds, offersSent, myItems, onList }) {
+function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, onSignOut }) {
   const [tab, setTab] = useState("overview");
   const tabs = ["overview", "listings", "offers", "wishlist"];
   return (
@@ -762,12 +886,19 @@ function DashboardPage({ savedIds, offersSent, myItems, onList }) {
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.surfaceRaised, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <User size={24} color={T.inkMuted} />
         </div>
-        <div>
-          <div className="f-display" style={{ fontSize: 20, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>Demo Profile <BadgeCheck size={16} color={T.get} /></div>
+        <div style={{ flex: 1 }}>
+          <div className="f-display" style={{ fontSize: 20, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>
+            {user ? user.email.split("@")[0] : "Guest"} {user && <BadgeCheck size={16} color={T.get} />}
+          </div>
           <div className="f-body" style={{ fontSize: 12.5, color: T.inkMuted, display: "flex", alignItems: "center", gap: 4 }}>
-            <Star size={11} color={T.gold} fill={T.gold} /> 4.9 rating · Preview data, not a real account
+            {user ? user.email : "Not signed in — listings won't be saved"}
           </div>
         </div>
+        {user && (
+          <button onClick={onSignOut} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: `1px solid ${T.border}`, color: T.inkMuted, borderRadius: 10, padding: "8px 12px", fontSize: 12.5, cursor: "pointer" }}>
+            <LogOut size={13} /> Sign out
+          </button>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 26 }}>
@@ -788,9 +919,15 @@ function DashboardPage({ savedIds, offersSent, myItems, onList }) {
       {tab === "overview" && (
         <div className="f-body" style={{ color: T.inkMuted, fontSize: 13.5, lineHeight: 1.7 }}>
           <p>This is your control center for everything happening on Reloop — new offers, active swaps, and saved items all live here.</p>
-          <div style={{ marginTop: 18, background: T.surface, border: `1px dashed ${T.border}`, borderRadius: 14, padding: 20, fontSize: 13 }}>
-            <strong style={{ color: T.ink }}>No account system yet.</strong> Anyone visiting this link sees their own session only — items you list here aren't saved once you close the tab, and there's no real sign-up. Listings and offers are stored purely in your browser's memory for this preview.
-          </div>
+          {user ? (
+            <div style={{ marginTop: 18, background: T.getDim, border: `1px solid ${T.get}44`, borderRadius: 14, padding: 20, fontSize: 13 }}>
+              <strong style={{ color: T.ink }}>You're signed in.</strong> Items you list are saved for real and visible to anyone who visits this site — try it on another device or ask someone else to check.
+            </div>
+          ) : (
+            <div style={{ marginTop: 18, background: T.surface, border: `1px dashed ${T.border}`, borderRadius: 14, padding: 20, fontSize: 13 }}>
+              <strong style={{ color: T.ink }}>Not signed in.</strong> You can browse freely, but listing an item requires an account so it's tied to a real person and stays visible to everyone.
+            </div>
+          )}
         </div>
       )}
       {tab === "listings" && (
@@ -816,7 +953,7 @@ function DashboardPage({ savedIds, offersSent, myItems, onList }) {
       )}
       {tab === "wishlist" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 14 }}>
-          {ITEMS.filter((i) => savedIds.includes(i.id)).map((it) => (
+          {allItems.filter((i) => savedIds.includes(i.id)).map((it) => (
             <ItemCard key={it.id} item={it} onOpen={() => {}} saved onToggleSave={() => {}} />
           ))}
           {savedIds.length === 0 && <div className="f-body" style={{ fontSize: 13.5, color: T.inkMuted }}>Nothing saved yet — tap the heart on any item to add it here.</div>}
@@ -836,45 +973,80 @@ export default function App() {
   const [offersSent, setOffersSent] = useState(0);
   const [myItems, setMyItems] = useState(MY_ITEMS);
   const [showListForm, setShowListForm] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [theme, setTheme] = useState("dark");
+  const [user, setUser] = useState(null);
+  const [dbListings, setDbListings] = useState([]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
+  // Real auth session — persists across reloads, shared login across the site.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  // Real shared listings — visible to every visitor, not just this browser.
+  const fetchListings = async () => {
+    const { data, error } = await supabase.from("listings").select("*").order("created_at", { ascending: false });
+    if (!error && data) {
+      setDbListings(
+        data.map((d) => ({
+          id: d.id, title: d.title, cat: d.category, value: d.value, condition: d.condition,
+          desc: d.description, loc: "Community listing", posted: "Recently", swap: true, rating: 5.0,
+          wants: ["Any reasonable offer"], photo: d.photo, ownerEmail: d.owner_email,
+        }))
+      );
+    }
+  };
+  useEffect(() => { fetchListings(); }, []);
+
+  const allItems = useMemo(() => [...dbListings, ...ITEMS], [dbListings]);
+
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
-
   const toggleSave = (id) => setSavedIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
   const openItem = (item) => { setSelected(item); setPage("detail"); window.scrollTo?.(0, 0); };
-
-  const addListing = (item) => setMyItems((s) => [item, ...s]);
+  const addListing = (item) => { setMyItems((s) => [item, ...s]); fetchListings(); };
+  const signOut = async () => { await supabase.auth.signOut(); };
 
   return (
     <div className="f-body" style={{ minHeight: "100vh", background: T.bg, color: T.ink }}>
       {FONTS}
-      <Navbar page={page} setPage={setPage} onList={() => setShowListForm(true)} theme={theme} onToggleTheme={toggleTheme} />
+      <Navbar
+        page={page} setPage={setPage} onList={() => setShowListForm(true)} theme={theme} onToggleTheme={toggleTheme}
+        user={user} onProfile={() => (user ? setPage("dashboard") : setShowAuth(true))}
+      />
 
-      {page === "home" && <HomePage setPage={setPage} search={search} setSearch={setSearch} onList={() => setShowListForm(true)} />}
-      {page === "browse" && <BrowsePage search={search} setSearch={setSearch} onOpen={openItem} savedIds={savedIds} onToggleSave={toggleSave} />}
+      {page === "home" && <HomePage setPage={setPage} search={search} setSearch={setSearch} onList={() => setShowListForm(true)} allItems={allItems} />}
+      {page === "browse" && <BrowsePage search={search} setSearch={setSearch} onOpen={openItem} savedIds={savedIds} onToggleSave={toggleSave} allItems={allItems} />}
       {page === "detail" && selected && (
         <ItemDetail
           item={selected}
+          allItems={allItems}
           onBack={(maybeItem) => (maybeItem && maybeItem.id ? openItem(maybeItem) : setPage("browse"))}
           onOffer={(it) => setOfferItem(it)}
           saved={savedIds.includes(selected.id)}
           onToggleSave={toggleSave}
         />
       )}
-      {page === "dashboard" && <DashboardPage savedIds={savedIds} offersSent={offersSent} myItems={myItems} onList={() => setShowListForm(true)} />}
+      {page === "dashboard" && (
+        <DashboardPage savedIds={savedIds} offersSent={offersSent} myItems={myItems} onList={() => setShowListForm(true)} user={user} allItems={allItems} onSignOut={signOut} />
+      )}
 
       {offerItem && (
         <OfferModal item={offerItem} myItems={myItems} onClose={() => setOfferItem(null)} onSend={() => setOffersSent((n) => n + 1)} />
       )}
 
       {showListForm && (
-        <ListItemForm onClose={() => setShowListForm(false)} onCreate={addListing} />
+        <ListItemForm onClose={() => setShowListForm(false)} onCreate={addListing} user={user} onRequireAuth={() => setShowAuth(true)} />
       )}
+
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
 
       <BottomNav page={page} setPage={setPage} onList={() => setShowListForm(true)} />
       <style>{`@media (max-width: 720px){ .mobile-nav{ display:flex !important; } }`}</style>
