@@ -728,12 +728,16 @@ function Navbar({ page, setPage, onList, theme, onToggleTheme, user, onProfile }
   );
 }
 
-function BottomNav({ page, setPage, onList }) {
-  const items = [["home", Home, "Home"], ["browse", Compass, "Explore"], ["__list", Plus, ""], ["dashboard", MessageCircle, "Messages"], ["dashboard", User, "Profile"]];
+function BottomNav({ page, setPage, onList, onProfile }) {
+  const items = [["home", Home, "Home"], ["browse", Compass, "Explore"], ["__list", Plus, ""], ["dashboard", MessageCircle, "Messages"], ["__profile", User, "Profile"]];
   return (
     <div style={{ display: "none", position: "fixed", bottom: 0, left: 0, right: 0, background: T.surface, borderTop: `1px solid ${T.border}`, padding: "10px 16px", zIndex: 40 }} className="mobile-nav">
       {items.map(([key, Icon, label], i) => (
-        <button key={i} onClick={() => (key === "__list" ? onList() : setPage(key))} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: page === key ? T.get : T.inkMuted, cursor: "pointer", flex: 1 }}>
+        <button
+          key={i}
+          onClick={() => (key === "__list" ? onList() : key === "__profile" ? onProfile() : setPage(key))}
+          style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: page === key ? T.get : T.inkMuted, cursor: "pointer", flex: 1 }}
+        >
           {key === "__list"
             ? <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.get, display: "flex", alignItems: "center", justifyContent: "center", marginTop: -18 }}><Plus size={20} color="#08130E" /></div>
             : <Icon size={19} />}
@@ -877,7 +881,7 @@ function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave, allItem
 }
 
 // ---------- DASHBOARD ----------
-function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, onSignOut }) {
+function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, onSignOut, onRequireAuth }) {
   const [tab, setTab] = useState("overview");
   const tabs = ["overview", "listings", "offers", "wishlist"];
   return (
@@ -894,9 +898,13 @@ function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, 
             {user ? user.email : "Not signed in — listings won't be saved"}
           </div>
         </div>
-        {user && (
+        {user ? (
           <button onClick={onSignOut} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: `1px solid ${T.border}`, color: T.inkMuted, borderRadius: 10, padding: "8px 12px", fontSize: 12.5, cursor: "pointer" }}>
             <LogOut size={13} /> Sign out
+          </button>
+        ) : (
+          <button onClick={onRequireAuth} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: T.get, border: "none", color: "#08130E", borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            Log in / Sign up
           </button>
         )}
       </div>
@@ -1035,7 +1043,7 @@ export default function App() {
         />
       )}
       {page === "dashboard" && (
-        <DashboardPage savedIds={savedIds} offersSent={offersSent} myItems={myItems} onList={() => setShowListForm(true)} user={user} allItems={allItems} onSignOut={signOut} />
+        <DashboardPage savedIds={savedIds} offersSent={offersSent} myItems={myItems} onList={() => setShowListForm(true)} user={user} allItems={allItems} onSignOut={signOut} onRequireAuth={() => setShowAuth(true)} />
       )}
 
       {offerItem && (
@@ -1048,7 +1056,7 @@ export default function App() {
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
 
-      <BottomNav page={page} setPage={setPage} onList={() => setShowListForm(true)} />
+      <BottomNav page={page} setPage={setPage} onList={() => setShowListForm(true)} onProfile={() => (user ? setPage("dashboard") : setShowAuth(true))} />
       <style>{`@media (max-width: 720px){ .mobile-nav{ display:flex !important; } }`}</style>
 
       <div style={{ borderTop: `1px solid ${T.border}`, padding: "30px 20px", textAlign: "center" }}>
