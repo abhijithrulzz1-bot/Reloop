@@ -28,6 +28,8 @@ const FONTS = (
     .f-body { font-family: 'Inter', sans-serif; }
     .f-mono { font-family: 'IBM Plex Mono', monospace; }
     * { box-sizing: border-box; }
+    html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #0B0F0E; overflow-x: hidden; }
+    body { overflow-x: hidden; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: #2A332F; border-radius: 4px; }
     .card-hover { transition: transform .25s ease, border-color .25s ease; }
@@ -36,6 +38,12 @@ const FONTS = (
     @keyframes fadeIn { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:none;} }
     input:focus, button:focus { outline: 2px solid #4ADE9E; outline-offset: 2px; }
     input::placeholder { color: #6B756F; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .detail-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; }
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .detail-grid { grid-template-columns: 1fr; gap: 20px; }
+    }
   `}</style>
 );
 
@@ -472,7 +480,7 @@ function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
       <button onClick={onBack} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: T.inkMuted, cursor: "pointer", marginBottom: 18, fontSize: 13.5 }}>
         <ChevronLeft size={16} /> Back to browse
       </button>
-      <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 32 }}>
+      <div className="detail-grid">
         <div>
           <ItemImage item={item} height={340} style={{ borderRadius: 18, border: `1px solid ${T.border}` }} />
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -556,7 +564,7 @@ function Navbar({ page, setPage, onList }) {
     <div style={{ borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: "rgba(11,15,14,0.9)", backdropFilter: "blur(8px)", zIndex: 30 }}>
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", gap: 32 }}>
         <div onClick={() => setPage("home")} style={{ cursor: "pointer" }}><Logo /></div>
-        <div className="f-body" style={{ display: "flex", gap: 22, flex: 1 }}>
+        <div className="f-body nav-links">
           {links.map((l) => (
             <span key={l} onClick={() => setPage(l === "Browse" ? "browse" : "home")} style={{ fontSize: 13.5, color: T.inkMuted, cursor: "pointer", fontWeight: 500 }}>{l}</span>
           ))}
