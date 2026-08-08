@@ -1,24 +1,26 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Search, Heart, MapPin, Star, ArrowLeftRight, X, ChevronLeft,
   ChevronRight, Home, Compass, MessageCircle, User, Plus,
   Smartphone, Laptop, Car, Bike, Gamepad2, Camera, Sofa, Watch,
-  Shirt, Package, SlidersHorizontal, Check, BadgeCheck, TrendingUp
+  Shirt, Package, SlidersHorizontal, Check, BadgeCheck, TrendingUp, Sun, Moon
 } from "lucide-react";
 
 // ---------- THEME ----------
+// Values point at CSS custom properties so the whole app can retheme
+// by flipping data-theme on <html> — no component-level plumbing needed.
 const T = {
-  bg: "#0B0F0E",
-  surface: "#141A18",
-  surfaceRaised: "#1C2422",
-  border: "#28322F",
-  ink: "#F3F5F2",
-  inkMuted: "#93A099",
-  give: "#FF7A59",
-  giveDim: "#3A2620",
-  get: "#4ADE9E",
-  getDim: "#173028",
-  gold: "#E8C468",
+  bg: "var(--bg)",
+  surface: "var(--surface)",
+  surfaceRaised: "var(--surfaceRaised)",
+  border: "var(--border)",
+  ink: "var(--ink)",
+  inkMuted: "var(--inkMuted)",
+  give: "var(--give)",
+  giveDim: "var(--giveDim)",
+  get: "var(--get)",
+  getDim: "var(--getDim)",
+  gold: "var(--gold)",
 };
 
 const FONTS = (
@@ -28,7 +30,19 @@ const FONTS = (
     .f-body { font-family: 'Inter', sans-serif; }
     .f-mono { font-family: 'IBM Plex Mono', monospace; }
     * { box-sizing: border-box; }
-    html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #0B0F0E; overflow-x: hidden; }
+    :root, html[data-theme="dark"] {
+      --bg: #0B0F0E; --surface: #141A18; --surfaceRaised: #1C2422; --border: #28322F;
+      --ink: #F3F5F2; --inkMuted: #93A099; --give: #FF7A59; --giveDim: #3A2620;
+      --get: #4ADE9E; --getDim: #173028; --gold: #E8C468; --navbg: rgba(11,15,14,0.9);
+      --scrim: rgba(5,7,6,0.72);
+    }
+    html[data-theme="light"] {
+      --bg: #FAF9F6; --surface: #FFFFFF; --surfaceRaised: #F1EFE8; --border: #E2DED3;
+      --ink: #16211D; --inkMuted: #6C766F; --give: #E15A38; --giveDim: #FCE6DD;
+      --get: #17966A; --getDim: #DEF5E9; --gold: #A5771E; --navbg: rgba(250,249,246,0.9);
+      --scrim: rgba(20,22,20,0.45);
+    }
+    html, body, #root { margin: 0; padding: 0; min-height: 100%; background: var(--bg); overflow-x: hidden; transition: background .25s ease; }
     body { overflow-x: hidden; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: #2A332F; border-radius: 4px; }
@@ -457,7 +471,7 @@ function OfferModal({ item, myItems, onClose, onSend }) {
 
 function Overlay({ children, onClose }) {
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(5,7,6,0.72)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "var(--scrim)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 }}>
       <div
         onClick={(e) => e.stopPropagation()}
         className="fade-in"
@@ -558,10 +572,10 @@ function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
 }
 
 // ---------- NAVBAR ----------
-function Navbar({ page, setPage, onList }) {
+function Navbar({ page, setPage, onList, theme, onToggleTheme }) {
   const links = ["Browse", "Categories", "Find My Match", "How It Works"];
   return (
-    <div style={{ borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: "rgba(11,15,14,0.9)", backdropFilter: "blur(8px)", zIndex: 30 }}>
+    <div style={{ borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: "var(--navbg)", backdropFilter: "blur(8px)", zIndex: 30 }}>
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", gap: 32 }}>
         <div onClick={() => setPage("home")} style={{ cursor: "pointer" }}><Logo /></div>
         <div className="f-body nav-links">
@@ -569,7 +583,14 @@ function Navbar({ page, setPage, onList }) {
             <span key={l} onClick={() => setPage(l === "Browse" ? "browse" : "home")} style={{ fontSize: 13.5, color: T.inkMuted, cursor: "pointer", fontWeight: 500 }}>{l}</span>
           ))}
         </div>
-        <div className="f-body" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div className="f-body" style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
+          <button
+            onClick={onToggleTheme}
+            aria-label="Toggle dark or light mode"
+            style={{ width: 34, height: 34, borderRadius: "50%", background: T.surfaceRaised, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.inkMuted }}
+          >
+            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           <button onClick={() => setPage("dashboard")} style={{ background: "none", border: "none", color: T.inkMuted, cursor: "pointer", display: "flex" }}><MessageCircle size={18} /></button>
           <button onClick={onList} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <Plus size={15} /> List an Item
@@ -815,6 +836,13 @@ export default function App() {
   const [offersSent, setOffersSent] = useState(0);
   const [myItems, setMyItems] = useState(MY_ITEMS);
   const [showListForm, setShowListForm] = useState(false);
+  const [theme, setTheme] = useState("dark");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   const toggleSave = (id) => setSavedIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
@@ -825,7 +853,7 @@ export default function App() {
   return (
     <div className="f-body" style={{ minHeight: "100vh", background: T.bg, color: T.ink }}>
       {FONTS}
-      <Navbar page={page} setPage={setPage} onList={() => setShowListForm(true)} />
+      <Navbar page={page} setPage={setPage} onList={() => setShowListForm(true)} theme={theme} onToggleTheme={toggleTheme} />
 
       {page === "home" && <HomePage setPage={setPage} search={search} setSearch={setSearch} onList={() => setShowListForm(true)} />}
       {page === "browse" && <BrowsePage search={search} setSearch={setSearch} onOpen={openItem} savedIds={savedIds} onToggleSave={toggleSave} />}
