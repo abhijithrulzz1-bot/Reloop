@@ -91,9 +91,20 @@ function catColors(cat) {
   return ICON_PALETTE[h];
 }
 function ItemImage({ item, height = 160, style = {} }) {
+  const [failed, setFailed] = useState(false);
   const cat = item.cat || "Other";
   const Icon = (CATEGORIES.find((c) => c.name === cat) || {}).icon || Package;
   const [c1, c2] = catColors(cat);
+  if (item.photo && !failed) {
+    return (
+      <img
+        src={item.photo}
+        alt={item.title}
+        onError={() => setFailed(true)}
+        style={{ width: "100%", height, objectFit: "cover", display: "block", flexShrink: 0, ...style }}
+      />
+    );
+  }
   return (
     <div
       style={{
@@ -157,6 +168,123 @@ function StatCard({ label, value, accent }) {
   );
 }
 
+// ---------- LIST AN ITEM ----------
+function ListItemForm({ onClose, onCreate }) {
+  const [title, setTitle] = useState("");
+  const [cat, setCat] = useState(CATEGORIES[0].name);
+  const [value, setValue] = useState("");
+  const [condition, setCondition] = useState("Good");
+  const [desc, setDesc] = useState("");
+  const [photo, setPhoto] = useState(null);
+  const [done, setDone] = useState(false);
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const canSubmit = title.trim() && value;
+
+  if (done) {
+    return (
+      <Overlay onClose={onClose}>
+        <div className="fade-in" style={{ padding: "40px 32px", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.getDim, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
+            <Check size={26} color={T.get} />
+          </div>
+          <div className="f-display" style={{ fontSize: 22, color: T.ink, marginBottom: 8 }}>Listing published</div>
+          <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
+            "{title}" is now visible on your profile with the photo you uploaded.
+          </p>
+          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+            Done
+          </button>
+        </div>
+      </Overlay>
+    );
+  }
+
+  return (
+    <Overlay onClose={onClose}>
+      <div style={{ padding: "26px 26px 18px", borderBottom: `1px solid ${T.border}` }}>
+        <div className="f-display" style={{ fontSize: 20, color: T.ink }}>List an item</div>
+        <div className="f-body" style={{ fontSize: 13, color: T.inkMuted, marginTop: 2 }}>Add a real photo from your device</div>
+      </div>
+
+      <div style={{ padding: "20px 26px", maxHeight: "58vh", overflowY: "auto" }}>
+        <label className="f-body" htmlFor="reloop-photo-upload" style={{ display: "block", cursor: "pointer", marginBottom: 18 }}>
+          {photo ? (
+            <img src={photo} alt="preview" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 14, border: `1px solid ${T.border}` }} />
+          ) : (
+            <div style={{ width: "100%", height: 160, borderRadius: 14, border: `1.5px dashed ${T.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: T.inkMuted }}>
+              <Camera size={22} />
+              <span style={{ fontSize: 13 }}>Tap to upload a photo</span>
+            </div>
+          )}
+          <input id="reloop-photo-upload" type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
+        </label>
+
+        <div className="f-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>TITLE</div>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. iPhone 14 Pro, 256GB"
+              style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 14 }} />
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>CATEGORY</div>
+              <select value={cat} onChange={(e) => setCat(e.target.value)} style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 13.5 }}>
+                {CATEGORIES.map((c) => <option key={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>CONDITION</div>
+              <select value={condition} onChange={(e) => setCondition(e.target.value)} style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 13.5 }}>
+                {["New", "Like New", "Excellent", "Good", "Fair"].map((c) => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>ESTIMATED VALUE</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="f-mono" style={{ color: T.inkMuted }}>₹</span>
+              <input type="number" min={0} value={value} onChange={(e) => setValue(e.target.value)} placeholder="45000"
+                className="f-mono" style={{ flex: 1, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 14 }} />
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>DESCRIPTION</div>
+            <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} placeholder="Condition details, accessories included..."
+              style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 13.5, resize: "vertical", fontFamily: "inherit" }} />
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: "18px 26px", borderTop: `1px solid ${T.border}` }}>
+        <button
+          disabled={!canSubmit}
+          onClick={() => {
+            onCreate({
+              id: Date.now(),
+              title, cat, value: Number(value) || 0, condition, desc: desc || "No description provided.",
+              loc: "Thiruvananthapuram", posted: "Just now", swap: true, rating: 5.0,
+              wants: ["Any reasonable offer"], photo,
+            });
+            setDone(true);
+          }}
+          className="f-body"
+          style={{ width: "100%", background: canSubmit ? T.get : T.surfaceRaised, color: canSubmit ? "#08130E" : T.inkMuted, border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: canSubmit ? "pointer" : "not-allowed" }}
+        >
+          Publish Listing
+        </button>
+      </div>
+    </Overlay>
+  );
+}
+
 // ---------- ITEM CARD ----------
 function ItemCard({ item, onOpen, saved, onToggleSave }) {
   const matchPct = 60 + (item.id * 7) % 35;
@@ -205,12 +333,12 @@ function ItemCard({ item, onOpen, saved, onToggleSave }) {
 }
 
 // ---------- OFFER MODAL ----------
-function OfferModal({ item, onClose, onSend }) {
-  const [selectedMine, setSelectedMine] = useState(MY_ITEMS[0].id);
+function OfferModal({ item, myItems, onClose, onSend }) {
+  const [selectedMine, setSelectedMine] = useState(myItems[0]?.id);
   const [cashMode, setCashMode] = useState("none"); // none | add | want
   const [cashAmt, setCashAmt] = useState(0);
   const [sent, setSent] = useState(false);
-  const mine = MY_ITEMS.find((m) => m.id === selectedMine);
+  const mine = myItems.find((m) => m.id === selectedMine) || myItems[0];
   const rawDiff = item.value - mine.value;
 
   const diff = cashMode === "add" ? cashAmt : cashMode === "want" ? -cashAmt : rawDiff;
@@ -244,7 +372,7 @@ function OfferModal({ item, onClose, onSend }) {
       <div style={{ padding: "22px 26px", maxHeight: "55vh", overflowY: "auto" }}>
         <div className="f-body" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 10 }}>YOU OFFER</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 22 }}>
-          {MY_ITEMS.map((m) => (
+          {myItems.map((m) => (
             <button
               key={m.id}
               onClick={() => setSelectedMine(m.id)}
@@ -422,7 +550,7 @@ function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
 }
 
 // ---------- NAVBAR ----------
-function Navbar({ page, setPage }) {
+function Navbar({ page, setPage, onList }) {
   const links = ["Browse", "Categories", "Find My Match", "How It Works"];
   return (
     <div style={{ borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: "rgba(11,15,14,0.9)", backdropFilter: "blur(8px)", zIndex: 30 }}>
@@ -435,7 +563,7 @@ function Navbar({ page, setPage }) {
         </div>
         <div className="f-body" style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <button onClick={() => setPage("dashboard")} style={{ background: "none", border: "none", color: T.inkMuted, cursor: "pointer", display: "flex" }}><MessageCircle size={18} /></button>
-          <button onClick={() => setPage("dashboard")} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <button onClick={onList} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <Plus size={15} /> List an Item
           </button>
           <button onClick={() => setPage("dashboard")} style={{ width: 34, height: 34, borderRadius: "50%", background: T.surfaceRaised, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -447,12 +575,12 @@ function Navbar({ page, setPage }) {
   );
 }
 
-function BottomNav({ page, setPage }) {
+function BottomNav({ page, setPage, onList }) {
   const items = [["home", Home, "Home"], ["browse", Compass, "Explore"], ["__list", Plus, ""], ["dashboard", MessageCircle, "Messages"], ["dashboard", User, "Profile"]];
   return (
     <div style={{ display: "none", position: "fixed", bottom: 0, left: 0, right: 0, background: T.surface, borderTop: `1px solid ${T.border}`, padding: "10px 16px", zIndex: 40 }} className="mobile-nav">
       {items.map(([key, Icon, label], i) => (
-        <button key={i} onClick={() => setPage(key === "__list" ? "dashboard" : key)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: page === key ? T.get : T.inkMuted, cursor: "pointer", flex: 1 }}>
+        <button key={i} onClick={() => (key === "__list" ? onList() : setPage(key))} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: page === key ? T.get : T.inkMuted, cursor: "pointer", flex: 1 }}>
           {key === "__list"
             ? <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.get, display: "flex", alignItems: "center", justifyContent: "center", marginTop: -18 }}><Plus size={20} color="#08130E" /></div>
             : <Icon size={19} />}
@@ -464,7 +592,7 @@ function BottomNav({ page, setPage }) {
 }
 
 // ---------- HOME ----------
-function HomePage({ setPage, search, setSearch }) {
+function HomePage({ setPage, search, setSearch, onList }) {
   return (
     <div className="fade-in">
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "70px 20px 40px", textAlign: "center" }}>
@@ -481,7 +609,7 @@ function HomePage({ setPage, search, setSearch }) {
           <button onClick={() => setPage("browse")} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "13px 26px", fontWeight: 700, fontSize: 14.5, cursor: "pointer" }}>
             Explore Items
           </button>
-          <button onClick={() => setPage("dashboard")} className="f-body" style={{ background: "transparent", color: T.ink, border: `1px solid ${T.border}`, borderRadius: 12, padding: "13px 26px", fontWeight: 600, fontSize: 14.5, cursor: "pointer" }}>
+          <button onClick={onList} className="f-body" style={{ background: "transparent", color: T.ink, border: `1px solid ${T.border}`, borderRadius: 12, padding: "13px 26px", fontWeight: 600, fontSize: 14.5, cursor: "pointer" }}>
             List an Item
           </button>
         </div>
@@ -596,7 +724,7 @@ function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave }) {
 }
 
 // ---------- DASHBOARD ----------
-function DashboardPage({ savedIds, offersSent }) {
+function DashboardPage({ savedIds, offersSent, myItems, onList }) {
   const [tab, setTab] = useState("overview");
   const tabs = ["overview", "listings", "offers", "wishlist"];
   return (
@@ -614,8 +742,8 @@ function DashboardPage({ savedIds, offersSent }) {
       </div>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 26 }}>
-        <StatCard label="Active listings" value="5" />
-        <StatCard label="Offers received" value="12" accent={T.get} />
+        <StatCard label="Active listings" value={String(myItems.length)} />
+        <StatCard label="Offers received" value="0" accent={T.get} />
         <StatCard label="Offers sent" value={String(offersSent)} accent={T.give} />
         <StatCard label="Wishlist items" value={String(savedIds.length)} />
       </div>
@@ -632,13 +760,13 @@ function DashboardPage({ savedIds, offersSent }) {
         <div className="f-body" style={{ color: T.inkMuted, fontSize: 13.5, lineHeight: 1.7 }}>
           <p>This is your control center for everything happening on Reloop — new offers, active swaps, and saved items all live here.</p>
           <div style={{ marginTop: 18, background: T.surface, border: `1px dashed ${T.border}`, borderRadius: 14, padding: 20, fontSize: 13 }}>
-            <strong style={{ color: T.ink }}>Backend not connected.</strong> Auth, real listings, and live offer data will appear here once the account and database service is wired up.
+            <strong style={{ color: T.ink }}>No account system yet.</strong> Anyone visiting this link sees their own session only — items you list here aren't saved once you close the tab, and there's no real sign-up. Listings and offers are stored purely in your browser's memory for this preview.
           </div>
         </div>
       )}
       {tab === "listings" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 14 }}>
-          {MY_ITEMS.map((m) => (
+          {myItems.map((m) => (
             <div key={m.id} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
               <ItemImage item={m} height={110} />
               <div style={{ padding: 12 }}>
@@ -647,6 +775,9 @@ function DashboardPage({ savedIds, offersSent }) {
               </div>
             </div>
           ))}
+          <button onClick={onList} className="f-body" style={{ border: `1.5px dashed ${T.border}`, borderRadius: 14, background: "none", color: T.inkMuted, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 150, cursor: "pointer" }}>
+            <Plus size={20} /> Add a listing
+          </button>
         </div>
       )}
       {tab === "offers" && (
@@ -674,17 +805,21 @@ export default function App() {
   const [offerItem, setOfferItem] = useState(null);
   const [savedIds, setSavedIds] = useState([]);
   const [offersSent, setOffersSent] = useState(0);
+  const [myItems, setMyItems] = useState(MY_ITEMS);
+  const [showListForm, setShowListForm] = useState(false);
 
   const toggleSave = (id) => setSavedIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   const openItem = (item) => { setSelected(item); setPage("detail"); window.scrollTo?.(0, 0); };
 
+  const addListing = (item) => setMyItems((s) => [item, ...s]);
+
   return (
     <div className="f-body" style={{ minHeight: "100vh", background: T.bg, color: T.ink }}>
       {FONTS}
-      <Navbar page={page} setPage={setPage} />
+      <Navbar page={page} setPage={setPage} onList={() => setShowListForm(true)} />
 
-      {page === "home" && <HomePage setPage={setPage} search={search} setSearch={setSearch} />}
+      {page === "home" && <HomePage setPage={setPage} search={search} setSearch={setSearch} onList={() => setShowListForm(true)} />}
       {page === "browse" && <BrowsePage search={search} setSearch={setSearch} onOpen={openItem} savedIds={savedIds} onToggleSave={toggleSave} />}
       {page === "detail" && selected && (
         <ItemDetail
@@ -695,13 +830,17 @@ export default function App() {
           onToggleSave={toggleSave}
         />
       )}
-      {page === "dashboard" && <DashboardPage savedIds={savedIds} offersSent={offersSent} />}
+      {page === "dashboard" && <DashboardPage savedIds={savedIds} offersSent={offersSent} myItems={myItems} onList={() => setShowListForm(true)} />}
 
       {offerItem && (
-        <OfferModal item={offerItem} onClose={() => setOfferItem(null)} onSend={() => setOffersSent((n) => n + 1)} />
+        <OfferModal item={offerItem} myItems={myItems} onClose={() => setOfferItem(null)} onSend={() => setOffersSent((n) => n + 1)} />
       )}
 
-      <BottomNav page={page} setPage={setPage} />
+      {showListForm && (
+        <ListItemForm onClose={() => setShowListForm(false)} onCreate={addListing} />
+      )}
+
+      <BottomNav page={page} setPage={setPage} onList={() => setShowListForm(true)} />
       <style>{`@media (max-width: 720px){ .mobile-nav{ display:flex !important; } }`}</style>
 
       <div style={{ borderTop: `1px solid ${T.border}`, padding: "30px 20px", textAlign: "center" }}>
