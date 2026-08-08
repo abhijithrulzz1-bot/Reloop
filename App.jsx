@@ -69,13 +69,42 @@ const ITEMS = [
 ];
 
 const MY_ITEMS = [
-  { id: 101, title: "iPhone 13, 128GB", value: 34000, seed: "iphone13" },
-  { id: 102, title: "OnePlus 11", value: 28000, seed: "oneplus11" },
-  { id: 103, title: "Bose QC45 Headphones", value: 15000, seed: "bose" },
+  { id: 101, title: "iPhone 13, 128GB", value: 34000, cat: "Phones" },
+  { id: 102, title: "OnePlus 11", value: 28000, cat: "Phones" },
+  { id: 103, title: "Bose QC45 Headphones", value: 15000, cat: "Electronics" },
 ];
 
-const img = (seed) => `https://picsum.photos/seed/${seed}/640/480`;
 const inr = (n) => `\u20b9${n.toLocaleString("en-IN")}`;
+
+// Generated placeholder art — no external image host, so it always loads.
+const ICON_PALETTE = [
+  [T.give, "#8C3A24"],
+  [T.get, "#1F7A57"],
+  [T.gold, "#8A6A2A"],
+  ["#5B8DEF", "#2C4A8C"],
+  ["#B06AB3", "#5C2A6B"],
+  ["#4AC0DE", "#1C6E82"],
+];
+function catColors(cat) {
+  let h = 0;
+  for (let i = 0; i < cat.length; i++) h = (h + cat.charCodeAt(i)) % ICON_PALETTE.length;
+  return ICON_PALETTE[h];
+}
+function ItemImage({ item, height = 160, style = {} }) {
+  const cat = item.cat || "Other";
+  const Icon = (CATEGORIES.find((c) => c.name === cat) || {}).icon || Package;
+  const [c1, c2] = catColors(cat);
+  return (
+    <div
+      style={{
+        width: "100%", height, minWidth: 0, background: `linear-gradient(135deg, ${c1}, ${c2})`,
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, ...style,
+      }}
+    >
+      <Icon size={Math.max(18, height * 0.34)} color="rgba(255,255,255,0.88)" strokeWidth={1.4} />
+    </div>
+  );
+}
 
 // ---------- SMALL COMPONENTS ----------
 function Logo({ size = 22 }) {
@@ -138,7 +167,7 @@ function ItemCard({ item, onOpen, saved, onToggleSave }) {
       style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 18, overflow: "hidden", cursor: "pointer" }}
     >
       <div style={{ position: "relative" }}>
-        <img src={img(item.seed)} alt={item.title} style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
+        <ItemImage item={item} height={160} />
         <button
           onClick={(e) => { e.stopPropagation(); onToggleSave(item.id); }}
           style={{
@@ -226,7 +255,7 @@ function OfferModal({ item, onClose, onSend }) {
                 background: selectedMine === m.id ? T.giveDim : "transparent", cursor: "pointer", textAlign: "left",
               }}
             >
-              <img src={img(m.seed)} alt={m.title} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }} />
+              <ItemImage item={m} height={40} style={{ width: 40, borderRadius: 8 }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13.5, color: T.ink, fontWeight: 600 }}>{m.title}</div>
                 <div className="f-mono" style={{ fontSize: 12, color: T.inkMuted }}>{inr(m.value)}</div>
@@ -244,7 +273,7 @@ function OfferModal({ item, onClose, onSend }) {
 
         <div className="f-body" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 10 }}>FOR</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: `1px solid ${T.get}`, background: T.getDim, marginBottom: 22 }}>
-          <img src={img(item.seed)} alt={item.title} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }} />
+          <ItemImage item={item} height={40} style={{ width: 40, borderRadius: 8 }} />
           <div>
             <div className="f-body" style={{ fontSize: 13.5, color: T.ink, fontWeight: 600 }}>{item.title}</div>
             <div className="f-mono" style={{ fontSize: 12, color: T.inkMuted }}>{inr(item.value)}</div>
@@ -317,10 +346,10 @@ function ItemDetail({ item, onBack, onOffer, saved, onToggleSave }) {
       </button>
       <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 32 }}>
         <div>
-          <img src={img(item.seed)} alt={item.title} style={{ width: "100%", height: 340, objectFit: "cover", borderRadius: 18, border: `1px solid ${T.border}` }} />
+          <ItemImage item={item} height={340} style={{ borderRadius: 18, border: `1px solid ${T.border}` }} />
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            {[item.seed + "a", item.seed + "b", item.seed + "c"].map((s) => (
-              <img key={s} src={img(s)} style={{ width: 64, height: 48, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.border}` }} />
+            {[0, 1, 2].map((i) => (
+              <ItemImage key={i} item={item} height={48} style={{ width: 64, borderRadius: 8, border: `1px solid ${T.border}`, opacity: 0.7 + i * 0.15 }} />
             ))}
           </div>
           <div className="f-body" style={{ marginTop: 26 }}>
@@ -577,9 +606,9 @@ function DashboardPage({ savedIds, offersSent }) {
           <User size={24} color={T.inkMuted} />
         </div>
         <div>
-          <div className="f-display" style={{ fontSize: 20, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>Abhi <BadgeCheck size={16} color={T.get} /></div>
+          <div className="f-display" style={{ fontSize: 20, color: T.ink, display: "flex", alignItems: "center", gap: 6 }}>Demo Profile <BadgeCheck size={16} color={T.get} /></div>
           <div className="f-body" style={{ fontSize: 12.5, color: T.inkMuted, display: "flex", alignItems: "center", gap: 4 }}>
-            <MapPin size={11} /> Thiruvananthapuram · <Star size={11} color={T.gold} fill={T.gold} /> 4.9 · Member since 2024
+            <Star size={11} color={T.gold} fill={T.gold} /> 4.9 rating · Preview data, not a real account
           </div>
         </div>
       </div>
@@ -611,7 +640,7 @@ function DashboardPage({ savedIds, offersSent }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 14 }}>
           {MY_ITEMS.map((m) => (
             <div key={m.id} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
-              <img src={img(m.seed)} style={{ width: "100%", height: 110, objectFit: "cover" }} />
+              <ItemImage item={m} height={110} />
               <div style={{ padding: 12 }}>
                 <div className="f-body" style={{ fontSize: 13, color: T.ink, fontWeight: 600 }}>{m.title}</div>
                 <div className="f-mono" style={{ fontSize: 13, color: T.gold }}>{inr(m.value)}</div>
