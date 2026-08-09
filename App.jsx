@@ -208,15 +208,21 @@ function AuthModal({ onClose }) {
     setError("");
     if (!email.trim() || !password) { setError("Enter an email and password."); return; }
     setLoading(true);
-    const fn = mode === "signup" ? supabase.auth.signUp : supabase.auth.signInWithPassword;
-    const { data, error: err } = await fn({ email: email.trim(), password });
-    setLoading(false);
-    if (err) { setError(err.message); return; }
-    if (mode === "signup" && data?.user && !data?.session) {
-      setConfirmSent(true);
-      return;
+    try {
+      const fn = mode === "signup" ? supabase.auth.signUp.bind(supabase.auth) : supabase.auth.signInWithPassword.bind(supabase.auth);
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out. Check your connection and try again.")), 15000));
+      const { data, error: err } = await Promise.race([fn({ email: email.trim(), password }), timeout]);
+      if (err) { setError(err.message); return; }
+      if (mode === "signup" && data?.user && !data?.session) {
+        setConfirmSent(true);
+        return;
+      }
+      onClose();
+    } catch (e) {
+      setError(e?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    onClose();
   };
 
   if (confirmSent) {
@@ -404,22 +410,27 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
           onClick={async () => {
             setError("");
             setSaving(true);
-            const { data, error: err } = await supabase
-              .from("listings")
-              .insert({
-                title, category: cat, value: Number(value) || 0, condition,
-                description: desc || "No description provided.", photo, owner_email: user.email,
-              })
-              .select()
-              .single();
-            setSaving(false);
-            if (err) { setError(err.message); return; }
-            onCreate({
-              id: data.id, title: data.title, cat: data.category, value: data.value, condition: data.condition,
-              desc: data.description, loc: "Community listing", posted: "Just now", swap: true, rating: 5.0,
-              wants: ["Any reasonable offer"], photo: data.photo, ownerEmail: data.owner_email,
-            });
-            setDone(true);
+            try {
+              const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out. Check your connection and try again.")), 15000));
+              const { data, error: err } = await Promise.race([
+                supabase.from("listings").insert({
+                  title, category: cat, value: Number(value) || 0, condition,
+                  description: desc || "No description provided.", photo, owner_email: user.email,
+                }).select().single(),
+                timeout,
+              ]);
+              if (err) { setError(err.message); return; }
+              onCreate({
+                id: data.id, title: data.title, cat: data.category, value: data.value, condition: data.condition,
+                desc: data.description, loc: "Community listing", posted: "Just now", swap: true, rating: 5.0,
+                wants: ["Any reasonable offer"], photo: data.photo, ownerEmail: data.owner_email,
+              });
+              setDone(true);
+            } catch (e) {
+              setError(e?.message || "Something went wrong. Please try again.");
+            } finally {
+              setSaving(false);
+            }
           }}
           className="f-body"
           style={{ width: "100%", background: canSubmit ? T.get : T.surfaceRaised, color: canSubmit ? "#08130E" : T.inkMuted, border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: canSubmit && !saving ? "pointer" : "not-allowed" }}
