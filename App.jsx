@@ -30,22 +30,22 @@ const T = {
 
 const FONTS = (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-    .f-display { font-family: 'Fraunces', serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+    .f-display { font-family: 'Playfair Display', serif; }
     .f-body { font-family: 'Inter', sans-serif; }
-    .f-mono { font-family: 'IBM Plex Mono', monospace; }
+    .f-mono { font-family: 'Cormorant Garamond', serif; font-weight: 600; }
     * { box-sizing: border-box; }
     :root, html[data-theme="dark"] {
-      --bg: #0B0F0E; --surface: #141A18; --surfaceRaised: #1C2422; --border: #28322F;
-      --ink: #F3F5F2; --inkMuted: #93A099; --give: #FF7A59; --giveDim: #3A2620;
-      --get: #4ADE9E; --getDim: #173028; --gold: #E8C468; --navbg: rgba(11,15,14,0.9);
-      --scrim: rgba(5,7,6,0.72);
+      --bg: #0B0908; --surface: #16130E; --surfaceRaised: #201B13; --border: #38301F;
+      --ink: #F3EEDF; --inkMuted: #A79878; --give: #8C2A3D; --giveDim: #2B1114;
+      --get: #D4AF37; --getDim: #2B2410; --gold: #E7C468; --navbg: rgba(11,9,8,0.92);
+      --scrim: rgba(6,5,4,0.78);
     }
     html[data-theme="light"] {
-      --bg: #FAF9F6; --surface: #FFFFFF; --surfaceRaised: #F1EFE8; --border: #E2DED3;
-      --ink: #16211D; --inkMuted: #6C766F; --give: #E15A38; --giveDim: #FCE6DD;
-      --get: #17966A; --getDim: #DEF5E9; --gold: #A5771E; --navbg: rgba(250,249,246,0.9);
-      --scrim: rgba(20,22,20,0.45);
+      --bg: #FAF6EC; --surface: #FFFDF8; --surfaceRaised: #F2EAD4; --border: #E1D3AC;
+      --ink: #1C1710; --inkMuted: #7C6E4E; --give: #7A2033; --giveDim: #F6E1E2;
+      --get: #9C7A22; --getDim: #F5EBCC; --gold: #85641C; --navbg: rgba(250,246,236,0.92);
+      --scrim: rgba(22,17,10,0.55);
     }
     html, body, #root { margin: 0; padding: 0; min-height: 100%; background: var(--bg); overflow-x: hidden; transition: background .25s ease; }
     body { overflow-x: hidden; }
@@ -105,12 +105,12 @@ const inr = (n) => `\u20b9${n.toLocaleString("en-IN")}`;
 
 // Generated placeholder art — no external image host, so it always loads.
 const ICON_PALETTE = [
-  [T.give, "#8C3A24"],
-  [T.get, "#1F7A57"],
-  [T.gold, "#8A6A2A"],
-  ["#5B8DEF", "#2C4A8C"],
-  ["#B06AB3", "#5C2A6B"],
-  ["#4AC0DE", "#1C6E82"],
+  [T.give, "#4A1220"],
+  [T.get, "#7A5C1A"],
+  [T.gold, "#5A431A"],
+  ["#1B4D3E", "#0D2620"],
+  ["#3B2C5E", "#1E1733"],
+  ["#123B4A", "#081F28"],
 ];
 function catColors(cat) {
   let h = 0;
@@ -162,7 +162,7 @@ function Pill({ children, active, onClick, style }) {
       onClick={onClick}
       className="f-body"
       style={{
-        padding: "8px 16px", borderRadius: 999, fontSize: 13.5, fontWeight: 600,
+        padding: "8px 16px", borderRadius: 3, fontSize: 13.5, fontWeight: 600,
         border: `1px solid ${active ? T.get : T.border}`,
         background: active ? T.getDim : "transparent",
         color: active ? T.get : T.inkMuted,
@@ -179,8 +179,8 @@ function SwapMeter({ pct }) {
   // pct: 0-100, how good the match / value balance is
   return (
     <div style={{ width: "100%" }}>
-      <div style={{ height: 5, borderRadius: 999, background: T.border, overflow: "hidden", display: "flex" }}>
-        <div style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${T.give}, ${T.get})`, borderRadius: 999 }} />
+      <div style={{ height: 5, borderRadius: 3, background: T.border, overflow: "hidden", display: "flex" }}>
+        <div style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${T.give}, ${T.get})`, borderRadius: 3 }} />
       </div>
     </div>
   );
@@ -188,7 +188,7 @@ function SwapMeter({ pct }) {
 
 function StatCard({ label, value, accent }) {
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, padding: "18px 20px", flex: 1, minWidth: 130 }}>
+    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 5, padding: "18px 20px", flex: 1, minWidth: 130 }}>
       <div className="f-mono" style={{ fontSize: 26, fontWeight: 500, color: accent || T.ink }}>{value}</div>
       <div className="f-body" style={{ fontSize: 12.5, color: T.inkMuted, marginTop: 4 }}>{label}</div>
     </div>
@@ -236,7 +236,7 @@ function AuthModal({ onClose }) {
           <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
             We sent a confirmation link to {email}. Click it, then come back and sign in.
           </p>
-          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
             Got it
           </button>
         </div>
@@ -254,7 +254,7 @@ function AuthModal({ onClose }) {
         <div className="f-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>EMAIL</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px" }}>
               <Mail size={14} color={T.inkMuted} />
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" type="email"
                 style={{ flex: 1, background: "transparent", border: "none", color: T.ink, fontSize: 14, outline: "none" }} />
@@ -262,7 +262,7 @@ function AuthModal({ onClose }) {
           </div>
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>PASSWORD</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px" }}>
               <Lock size={14} color={T.inkMuted} />
               <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" type="password"
                 onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -272,7 +272,7 @@ function AuthModal({ onClose }) {
           {error && <div className="f-body" style={{ color: T.give, fontSize: 12.5 }}>{error}</div>}
         </div>
 
-        <button onClick={submit} disabled={loading} className="f-body" style={{ width: "100%", marginTop: 18, background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1 }}>
+        <button onClick={submit} disabled={loading} className="f-body" style={{ width: "100%", marginTop: 18, background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1 }}>
           {loading ? "Please wait..." : mode === "signin" ? "Log in" : "Sign up"}
         </button>
 
@@ -320,7 +320,7 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
           <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
             Listings are tied to your account so buyers know who they're dealing with, and so it stays visible to everyone after you close this tab.
           </p>
-          <button onClick={() => { onClose(); onRequireAuth(); }} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={() => { onClose(); onRequireAuth(); }} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
             Log in / Sign up
           </button>
         </div>
@@ -339,7 +339,7 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
           <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
             "{title}" is now visible on your profile with the photo you uploaded.
           </p>
-          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
             Done
           </button>
         </div>
@@ -357,9 +357,9 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
       <div style={{ padding: "20px 26px", maxHeight: "58vh", overflowY: "auto" }}>
         <label className="f-body" htmlFor="reloop-photo-upload" style={{ display: "block", cursor: "pointer", marginBottom: 18 }}>
           {photo ? (
-            <img src={photo} alt="preview" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 14, border: `1px solid ${T.border}` }} />
+            <img src={photo} alt="preview" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 5, border: `1px solid ${T.border}` }} />
           ) : (
-            <div style={{ width: "100%", height: 160, borderRadius: 14, border: `1.5px dashed ${T.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: T.inkMuted }}>
+            <div style={{ width: "100%", height: 160, borderRadius: 5, border: `1.5px dashed ${T.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: T.inkMuted }}>
               <Camera size={22} />
               <span style={{ fontSize: 13 }}>Tap to upload a photo</span>
             </div>
@@ -371,18 +371,18 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>TITLE</div>
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. iPhone 14 Pro, 256GB"
-              style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 14 }} />
+              style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px", color: T.ink, fontSize: 14 }} />
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>CATEGORY</div>
-              <select value={cat} onChange={(e) => setCat(e.target.value)} style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 13.5 }}>
+              <select value={cat} onChange={(e) => setCat(e.target.value)} style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px", color: T.ink, fontSize: 13.5 }}>
                 {CATEGORIES.map((c) => <option key={c.name}>{c.name}</option>)}
               </select>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>CONDITION</div>
-              <select value={condition} onChange={(e) => setCondition(e.target.value)} style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 13.5 }}>
+              <select value={condition} onChange={(e) => setCondition(e.target.value)} style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px", color: T.ink, fontSize: 13.5 }}>
                 {["New", "Like New", "Excellent", "Good", "Fair"].map((c) => <option key={c}>{c}</option>)}
               </select>
             </div>
@@ -392,13 +392,13 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span className="f-mono" style={{ color: T.inkMuted }}>₹</span>
               <input type="number" min={0} value={value} onChange={(e) => setValue(e.target.value)} placeholder="45000"
-                className="f-mono" style={{ flex: 1, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 14 }} />
+                className="f-mono" style={{ flex: 1, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px", color: T.ink, fontSize: 14 }} />
             </div>
           </div>
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 6 }}>DESCRIPTION</div>
             <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} placeholder="Condition details, accessories included..."
-              style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 13.5, resize: "vertical", fontFamily: "inherit" }} />
+              style={{ width: "100%", background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px", color: T.ink, fontSize: 13.5, resize: "vertical", fontFamily: "inherit" }} />
           </div>
         </div>
       </div>
@@ -433,7 +433,7 @@ function ListItemForm({ onClose, onCreate, user, onRequireAuth }) {
             }
           }}
           className="f-body"
-          style={{ width: "100%", background: canSubmit ? T.get : T.surfaceRaised, color: canSubmit ? "#08130E" : T.inkMuted, border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: canSubmit && !saving ? "pointer" : "not-allowed" }}
+          style={{ width: "100%", background: canSubmit ? T.get : T.surfaceRaised, color: canSubmit ? "#08130E" : T.inkMuted, border: "none", borderRadius: 4, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: canSubmit && !saving ? "pointer" : "not-allowed" }}
         >
           {saving ? "Publishing..." : "Publish Listing"}
         </button>
@@ -449,7 +449,7 @@ function ItemCard({ item, onOpen, saved, onToggleSave }) {
     <div
       className="card-hover fade-in"
       onClick={() => onOpen(item)}
-      style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 18, overflow: "hidden", cursor: "pointer" }}
+      style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, overflow: "hidden", cursor: "pointer" }}
     >
       <div style={{ position: "relative" }}>
         <ItemImage item={item} height={160} />
@@ -463,7 +463,7 @@ function ItemCard({ item, onOpen, saved, onToggleSave }) {
           <Heart size={16} color={saved ? T.give : "#fff"} fill={saved ? T.give : "none"} />
         </button>
         {item.swap && (
-          <div className="f-body" style={{ position: "absolute", bottom: 10, left: 10, background: T.getDim, color: T.get, fontSize: 11, fontWeight: 700, padding: "4px 9px", borderRadius: 999, display: "flex", alignItems: "center", gap: 4 }}>
+          <div className="f-body" style={{ position: "absolute", bottom: 10, left: 10, background: T.getDim, color: T.get, fontSize: 11, fontWeight: 700, padding: "4px 9px", borderRadius: 3, display: "flex", alignItems: "center", gap: 4 }}>
             <ArrowLeftRight size={11} /> OPEN TO SWAP
           </div>
         )}
@@ -511,7 +511,7 @@ function OfferModal({ item, myItems, onClose, onSend }) {
           <p className="f-body" style={{ color: T.inkMuted, fontSize: 14, marginBottom: 24 }}>
             The owner of "{item.title}" has been notified. You'll hear back once they respond.
           </p>
-          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={onClose} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "12px 28px", fontWeight: 700, cursor: "pointer" }}>
             Done
           </button>
         </div>
@@ -535,12 +535,12 @@ function OfferModal({ item, myItems, onClose, onSend }) {
               onClick={() => setSelectedMine(m.id)}
               className="f-body"
               style={{
-                display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12,
+                display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 4,
                 border: `1px solid ${selectedMine === m.id ? T.give : T.border}`,
                 background: selectedMine === m.id ? T.giveDim : "transparent", cursor: "pointer", textAlign: "left",
               }}
             >
-              <ItemImage item={m} height={40} style={{ width: 40, borderRadius: 8 }} />
+              <ItemImage item={m} height={40} style={{ width: 40, borderRadius: 3 }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13.5, color: T.ink, fontWeight: 600 }}>{m.title}</div>
                 <div className="f-mono" style={{ fontSize: 12, color: T.inkMuted }}>{inr(m.value)}</div>
@@ -557,8 +557,8 @@ function OfferModal({ item, myItems, onClose, onSend }) {
         </div>
 
         <div className="f-body" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".04em", color: T.inkMuted, marginBottom: 10 }}>FOR</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: `1px solid ${T.get}`, background: T.getDim, marginBottom: 22 }}>
-          <ItemImage item={item} height={40} style={{ width: 40, borderRadius: 8 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 4, border: `1px solid ${T.get}`, background: T.getDim, marginBottom: 22 }}>
+          <ItemImage item={item} height={40} style={{ width: 40, borderRadius: 3 }} />
           <div>
             <div className="f-body" style={{ fontSize: 13.5, color: T.ink, fontWeight: 600 }}>{item.title}</div>
             <div className="f-mono" style={{ fontSize: 12, color: T.inkMuted }}>{inr(item.value)}</div>
@@ -578,12 +578,12 @@ function OfferModal({ item, myItems, onClose, onSend }) {
               type="number" min={0} value={cashAmt}
               onChange={(e) => setCashAmt(Math.max(0, Number(e.target.value)))}
               className="f-mono"
-              style={{ flex: 1, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", color: T.ink, fontSize: 14 }}
+              style={{ flex: 1, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 3, padding: "10px 12px", color: T.ink, fontSize: 14 }}
             />
           </div>
         )}
 
-        <div style={{ marginTop: 20, background: T.surfaceRaised, border: `1px solid ${T.border}`, borderRadius: 14, padding: "14px 16px" }}>
+        <div style={{ marginTop: 20, background: T.surfaceRaised, border: `1px solid ${T.border}`, borderRadius: 5, padding: "14px 16px" }}>
           <div className="f-body" style={{ fontSize: 12, color: T.inkMuted, marginBottom: 6 }}>Estimated deal difference</div>
           <div className="f-mono" style={{ fontSize: 22, fontWeight: 500, color: diff === 0 ? T.ink : diff > 0 ? T.give : T.get }}>
             {diff === 0 ? "Even swap" : diff > 0 ? `You pay ${inr(diff)}` : `You receive ${inr(Math.abs(diff))}`}
@@ -595,7 +595,7 @@ function OfferModal({ item, myItems, onClose, onSend }) {
         <button
           onClick={() => { setSent(true); onSend && onSend(); }}
           className="f-body"
-          style={{ width: "100%", background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: "pointer" }}
+          style={{ width: "100%", background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "13px 0", fontWeight: 700, fontSize: 14.5, cursor: "pointer" }}
         >
           Send Offer
         </button>
@@ -610,7 +610,7 @@ function Overlay({ children, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         className="fade-in"
-        style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 480, position: "relative", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
+        style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: "6px 6px 0 0", width: "100%", maxWidth: 480, position: "relative", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
       >
         <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 30, height: 30, borderRadius: "50%", background: T.surfaceRaised, border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 2 }}>
           <X size={15} color={T.inkMuted} />
@@ -631,10 +631,10 @@ function ItemDetail({ item, allItems, onBack, onOffer, saved, onToggleSave }) {
       </button>
       <div className="detail-grid">
         <div>
-          <ItemImage item={item} height={340} style={{ borderRadius: 18, border: `1px solid ${T.border}` }} />
+          <ItemImage item={item} height={340} style={{ borderRadius: 6, border: `1px solid ${T.border}` }} />
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             {[0, 1, 2].map((i) => (
-              <ItemImage key={i} item={item} height={48} style={{ width: 64, borderRadius: 8, border: `1px solid ${T.border}`, opacity: 0.7 + i * 0.15 }} />
+              <ItemImage key={i} item={item} height={48} style={{ width: 64, borderRadius: 3, border: `1px solid ${T.border}`, opacity: 0.7 + i * 0.15 }} />
             ))}
           </div>
           <div className="f-body" style={{ marginTop: 26 }}>
@@ -660,7 +660,7 @@ function ItemDetail({ item, allItems, onBack, onOffer, saved, onToggleSave }) {
             <span>{item.condition}</span>
           </div>
 
-          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, padding: 16, marginBottom: 20 }}>
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 5, padding: 16, marginBottom: 20 }}>
             <div className="f-body" style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.surfaceRaised, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <User size={18} color={T.inkMuted} />
@@ -677,14 +677,14 @@ function ItemDetail({ item, allItems, onBack, onOffer, saved, onToggleSave }) {
           </div>
 
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => onOffer(item)} className="f-body" style={{ flex: 1, background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "13px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+            <button onClick={() => onOffer(item)} className="f-body" style={{ flex: 1, background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "13px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
               Make an Offer
             </button>
-            <button onClick={() => onToggleSave(item.id)} className="f-body" style={{ width: 48, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <button onClick={() => onToggleSave(item.id)} className="f-body" style={{ width: 48, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <Heart size={18} color={saved ? T.give : T.inkMuted} fill={saved ? T.give : "none"} />
             </button>
           </div>
-          <button className="f-body" style={{ width: "100%", marginTop: 10, background: "transparent", border: `1px solid ${T.border}`, color: T.ink, borderRadius: 12, padding: "12px 0", fontWeight: 600, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <button className="f-body" style={{ width: "100%", marginTop: 10, background: "transparent", border: `1px solid ${T.border}`, color: T.ink, borderRadius: 4, padding: "12px 0", fontWeight: 600, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <MessageCircle size={16} /> Chat with owner
           </button>
         </div>
@@ -726,8 +726,7 @@ function Navbar({ page, setPage, onList, theme, onToggleTheme, user, onProfile }
           >
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-          <button onClick={() => setPage("dashboard")} style={{ background: "none", border: "none", color: T.inkMuted, cursor: "pointer", display: "flex" }}><MessageCircle size={18} /></button>
-          <button onClick={onList} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <button onClick={onList} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 3, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <Plus size={15} /> List an Item
           </button>
           <button onClick={onProfile} style={{ width: 34, height: 34, borderRadius: "50%", background: user ? T.getDim : T.surfaceRaised, border: `1px solid ${user ? T.get : T.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -764,7 +763,7 @@ function HomePage({ setPage, search, setSearch, onList, allItems }) {
   return (
     <div className="fade-in">
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "70px 20px 40px", textAlign: "center" }}>
-        <div className="f-body" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: T.get, background: T.getDim, border: `1px solid ${T.get}33`, padding: "6px 14px", borderRadius: 999, marginBottom: 24, fontWeight: 600 }}>
+        <div className="f-body" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: T.get, background: T.getDim, border: `1px solid ${T.get}33`, padding: "6px 14px", borderRadius: 3, marginBottom: 24, fontWeight: 600 }}>
           <TrendingUp size={13} /> 12,400+ successful swaps this year
         </div>
         <h1 className="f-display" style={{ fontSize: "clamp(34px, 5vw, 58px)", color: T.ink, fontWeight: 600, lineHeight: 1.08, marginBottom: 18, letterSpacing: "-0.02em" }}>
@@ -774,10 +773,10 @@ function HomePage({ setPage, search, setSearch, onList, allItems }) {
           Trade your unused items for something you actually want — with cash adjustments when the value doesn't quite match.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 40, flexWrap: "wrap" }}>
-          <button onClick={() => setPage("browse")} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 12, padding: "13px 26px", fontWeight: 700, fontSize: 14.5, cursor: "pointer" }}>
+          <button onClick={() => setPage("browse")} className="f-body" style={{ background: T.get, color: "#08130E", border: "none", borderRadius: 4, padding: "13px 26px", fontWeight: 700, fontSize: 14.5, cursor: "pointer" }}>
             Explore Items
           </button>
-          <button onClick={onList} className="f-body" style={{ background: "transparent", color: T.ink, border: `1px solid ${T.border}`, borderRadius: 12, padding: "13px 26px", fontWeight: 600, fontSize: 14.5, cursor: "pointer" }}>
+          <button onClick={onList} className="f-body" style={{ background: "transparent", color: T.ink, border: `1px solid ${T.border}`, borderRadius: 4, padding: "13px 26px", fontWeight: 600, fontSize: 14.5, cursor: "pointer" }}>
             List an Item
           </button>
         </div>
@@ -791,14 +790,14 @@ function HomePage({ setPage, search, setSearch, onList, allItems }) {
               onKeyDown={(e) => { if (e.key === "Enter") setPage("browse"); }}
               placeholder="Search phones, laptops, bikes, cameras, furniture..."
               className="f-body"
-              style={{ width: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "15px 16px 15px 46px", color: T.ink, fontSize: 14.5 }}
+              style={{ width: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 5, padding: "15px 16px 15px 46px", color: T.ink, fontSize: 14.5 }}
             />
           </div>
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: 30 }}>
           {CATEGORIES.map((c) => (
-            <button key={c.name} onClick={() => setPage("browse")} className="f-body" style={{ display: "flex", alignItems: "center", gap: 7, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, padding: "9px 15px", color: T.ink, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+            <button key={c.name} onClick={() => setPage("browse")} className="f-body" style={{ display: "flex", alignItems: "center", gap: 7, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 3, padding: "9px 15px", color: T.ink, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
               <c.icon size={14} color={T.get} /> {c.name}
             </button>
           ))}
@@ -858,7 +857,7 @@ function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave, allItem
       <div style={{ position: "relative", marginBottom: 18, maxWidth: 460 }}>
         <Search size={16} color={T.inkMuted} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search items..." className="f-body"
-          style={{ width: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: "11px 14px 11px 40px", color: T.ink, fontSize: 14 }} />
+          style={{ width: "100%", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 4, padding: "11px 14px 11px 40px", color: T.ink, fontSize: 14 }} />
       </div>
 
       <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6, marginBottom: 10 }}>
@@ -870,7 +869,7 @@ function BrowsePage({ search, setSearch, onOpen, savedIds, onToggleSave, allItem
         <span className="f-body" style={{ fontSize: 13, color: T.inkMuted }}>{filtered.length} items</span>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <SlidersHorizontal size={14} color={T.inkMuted} />
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className="f-body" style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, padding: "8px 10px", color: T.ink, fontSize: 12.5 }}>
+          <select value={sort} onChange={(e) => setSort(e.target.value)} className="f-body" style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 3, padding: "8px 10px", color: T.ink, fontSize: 12.5 }}>
             {["Recommended", "Newest", "Lowest value", "Highest value"].map((s) => <option key={s}>{s}</option>)}
           </select>
         </div>
@@ -910,11 +909,11 @@ function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, 
           </div>
         </div>
         {user ? (
-          <button onClick={onSignOut} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: `1px solid ${T.border}`, color: T.inkMuted, borderRadius: 10, padding: "8px 12px", fontSize: 12.5, cursor: "pointer" }}>
+          <button onClick={onSignOut} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: `1px solid ${T.border}`, color: T.inkMuted, borderRadius: 3, padding: "8px 12px", fontSize: 12.5, cursor: "pointer" }}>
             <LogOut size={13} /> Sign out
           </button>
         ) : (
-          <button onClick={onRequireAuth} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: T.get, border: "none", color: "#08130E", borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={onRequireAuth} className="f-body" style={{ display: "flex", alignItems: "center", gap: 6, background: T.get, border: "none", color: "#08130E", borderRadius: 3, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             Log in / Sign up
           </button>
         )}
@@ -939,11 +938,11 @@ function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, 
         <div className="f-body" style={{ color: T.inkMuted, fontSize: 13.5, lineHeight: 1.7 }}>
           <p>This is your control center for everything happening on Reloop — new offers, active swaps, and saved items all live here.</p>
           {user ? (
-            <div style={{ marginTop: 18, background: T.getDim, border: `1px solid ${T.get}44`, borderRadius: 14, padding: 20, fontSize: 13 }}>
+            <div style={{ marginTop: 18, background: T.getDim, border: `1px solid ${T.get}44`, borderRadius: 5, padding: 20, fontSize: 13 }}>
               <strong style={{ color: T.ink }}>You're signed in.</strong> Items you list are saved for real and visible to anyone who visits this site — try it on another device or ask someone else to check.
             </div>
           ) : (
-            <div style={{ marginTop: 18, background: T.surface, border: `1px dashed ${T.border}`, borderRadius: 14, padding: 20, fontSize: 13 }}>
+            <div style={{ marginTop: 18, background: T.surface, border: `1px dashed ${T.border}`, borderRadius: 5, padding: 20, fontSize: 13 }}>
               <strong style={{ color: T.ink }}>Not signed in.</strong> You can browse freely, but listing an item requires an account so it's tied to a real person and stays visible to everyone.
             </div>
           )}
@@ -952,7 +951,7 @@ function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, 
       {tab === "listings" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 14 }}>
           {myItems.map((m) => (
-            <div key={m.id} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+            <div key={m.id} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 5, overflow: "hidden" }}>
               <ItemImage item={m} height={110} />
               <div style={{ padding: 12 }}>
                 <div className="f-body" style={{ fontSize: 13, color: T.ink, fontWeight: 600 }}>{m.title}</div>
@@ -960,7 +959,7 @@ function DashboardPage({ savedIds, offersSent, myItems, onList, user, allItems, 
               </div>
             </div>
           ))}
-          <button onClick={onList} className="f-body" style={{ border: `1.5px dashed ${T.border}`, borderRadius: 14, background: "none", color: T.inkMuted, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 150, cursor: "pointer" }}>
+          <button onClick={onList} className="f-body" style={{ border: `1.5px dashed ${T.border}`, borderRadius: 5, background: "none", color: T.inkMuted, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 150, cursor: "pointer" }}>
             <Plus size={20} /> Add a listing
           </button>
         </div>
